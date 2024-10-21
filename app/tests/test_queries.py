@@ -85,7 +85,7 @@ async def test_get_json_final(db_session: AsyncSession):
                 }
             }
         }
-    }
+    )
     db_session.add(contratos)
     await db_session.commit()
 
