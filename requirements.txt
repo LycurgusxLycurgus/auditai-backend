@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+SQLAlchemy
+asyncpg
+pydantic
+openpyxl
+pytest
+pytest-asyncio
+alembic
