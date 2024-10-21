@@ -7,3 +7,4 @@ openpyxl
 pytest
 pytest-asyncio
 alembic
+psycopg2-binary
