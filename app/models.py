@@ -10,10 +10,11 @@ from sqlalchemy import (
     ARRAY,
 )
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.dialects.postgresql import ARRAY
+from .base import Base
 
-Base = declarative_base()
-
+# Remove this line as Base is now imported from base.py
+# Base = declarative_base()
 
 class Activacion(Base):
     __tablename__ = 'activacion'
@@ -69,6 +70,7 @@ class Contratos(Base):
     json_contratos_amparos = Column(JSON, nullable=False)
 
     index_table = relationship("IndexTable", back_populates="contrato")
+    tabla_madre = relationship("TablaMadre", back_populates="contrato", uselist=False)
 
 
 class Otrosi(Base):
@@ -82,6 +84,7 @@ class Otrosi(Base):
     json_otrosi_modificaciones = Column(JSON, nullable=False)
 
     index_table = relationship("IndexTable", back_populates="otrosi")
+    tabla_madre = relationship("TablaMadre", secondary="otrosi_tabla_madre", back_populates="otrosi")
 
 
 class Poliza(Base):
@@ -97,6 +100,7 @@ class Poliza(Base):
     hallazgos = Column(Boolean, default=False)
 
     index_table = relationship("IndexTable", back_populates="poliza")
+    tabla_madre = relationship("TablaMadre", secondary="poliza_tabla_madre", back_populates="poliza")
 
 
 class DocumentosGenerados(Base):
@@ -118,15 +122,28 @@ class TablaMadre(Base):
 
     consecutivo_contrato = Column(String(100), primary_key=True)
     id_documento_contrato = Column(Integer, ForeignKey('contratos.id_documento'), nullable=False)
-    id_documento_otrosi = Column(ARRAY(Integer), nullable=True)
-    id_documento_poliza = Column(ARRAY(Integer), nullable=True)
-    done = Column(Boolean, default=False)
+    id_documento_otrosi = Column(ARRAY(Integer))
+    id_documento_poliza = Column(ARRAY(Integer))
+    done = Column(Boolean)
     query = Column(Integer, nullable=False)
 
-    contrato = relationship("Contratos")
-    otrosi = relationship("Otrosi")
-    poliza = relationship("Poliza")
+    contrato = relationship("Contratos", back_populates="tabla_madre")
+    otrosi = relationship("Otrosi", secondary="otrosi_tabla_madre", back_populates="tabla_madre")
+    poliza = relationship("Poliza", secondary="poliza_tabla_madre", back_populates="tabla_madre")
 
+
+class OtrosiTablaMadre(Base):
+    __tablename__ = "otrosi_tabla_madre"
+
+    id_documento = Column(Integer, ForeignKey('otrosi.id_documento'), primary_key=True)
+    consecutivo_contrato = Column(String(100), ForeignKey('tabla_madre.consecutivo_contrato'), primary_key=True)
+
+
+class PolizaTablaMadre(Base):
+    __tablename__ = "poliza_tabla_madre"
+
+    id_documento = Column(Integer, ForeignKey('poliza.id_documento'), primary_key=True)
+    consecutivo_contrato = Column(String(100), ForeignKey('tabla_madre.consecutivo_contrato'), primary_key=True)
 
 # Define other chain tables and supervisor chain tables similarly
 # For brevity, they are not fully defined here
