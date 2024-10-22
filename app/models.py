@@ -85,6 +85,7 @@ class Otrosi(Base):
 
     index_table = relationship("IndexTable", back_populates="otrosi")
     tabla_madre = relationship("TablaMadre", secondary="otrosi_tabla_madre", back_populates="otrosi")
+    chain_otrosi = relationship("ChainOtrosi", back_populates="otrosi", uselist=False)
 
 
 class Poliza(Base):
@@ -147,3 +148,16 @@ class PolizaTablaMadre(Base):
 
 # Define other chain tables and supervisor chain tables similarly
 # For brevity, they are not fully defined here
+
+class ChainOtrosi(Base):
+    __tablename__ = "chain_otrosi"
+
+    id = Column(Integer, primary_key=True, index=True)
+    output_prompt_extractor = Column(JSON)
+    output_prompt_estandarizador = Column(JSON)
+    tokens_input = Column(Integer)
+    tokens_output = Column(Integer)
+    total_tokens = Column(Integer)
+    otrosi_id = Column(Integer, ForeignKey('otrosi.id'))
+
+    otrosi = relationship("Otrosi", back_populates="chain_otrosi")
